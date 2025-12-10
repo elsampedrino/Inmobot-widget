@@ -5,9 +5,11 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build outputs
-dist/
 build/
-*.iife.js
+
+# IMPORTANTE: Permitir widget-react/dist/ para Vercel
+# (excluir de ignorar con !)
+!widget-react/dist/
 
 # Cache
 .vite/

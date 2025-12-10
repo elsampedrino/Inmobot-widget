@@ -1,29 +1,55 @@
-# 🤖 InmoBot - Chatbot Inmobiliario con IA
+# 🤖 InmoBot - Asistente Virtual Inmobiliario
 
-Chatbot inteligente para inmobiliarias con IA de Claude, integrado con N8N y desplegado en Render.
+Widget de chat interactivo para inmobiliarias con inteligencia artificial powered by Claude AI.
 
-## 📋 Componentes
+## ✨ Características
 
-### 1. Widget React (`/widget-react`)
-- Widget de chat flotante para sitios web
-- Diseño moderno y responsive
-- Integración simple con una línea de código
-- **Ver:** [widget-react/INSTRUCCIONES.md](widget-react/INSTRUCCIONES.md)
+- 💬 **Chat en tiempo real** - Respuestas instantáneas con IA
+- 🏠 **Búsqueda inteligente de propiedades** - Encuentra la propiedad ideal según criterios
+- 📋 **Formulario de contacto** - Captura leads directamente desde el chat
+- 🌐 **Multiidioma** - Soporte para español, inglés y portugués
+- 📱 **Responsive** - Funciona perfecto en desktop, tablet y móvil
+- 📊 **Estadísticas** - Tracking de conversaciones y conversiones
+- 📲 **Notificaciones Telegram** - Alertas en tiempo real de nuevos leads
 
-### 2. Workflow N8N
-- Flujo de procesamiento de consultas
-- Integración con Claude AI (Haiku + Sonnet)
-- Webhook API en Render
-- **URL:** https://n8n-bot-inmobiliario.onrender.com/webhook/chat
+## 🚀 Demo en vivo
 
-### 3. Documentación (`/Documentacion`)
-- Guías de deploy
-- Documentación técnica
-- Casos de uso y ejemplos
+Probá el widget en acción: [Demo InmoBot](https://demo-chatbot-inmobiliaria.vercel.app)
 
-## 🚀 Quick Start
+## 🛠️ Tecnologías
 
-### Desarrollo del Widget
+- **Frontend**: React + Vite
+- **Backend**: N8N + Claude AI (Anthropic API)
+- **Base de datos**: PostgreSQL
+- **Deployment**: Vercel
+- **Notificaciones**: Telegram Bot API
+
+## 📦 Instalación
+
+### Para usar el widget en tu sitio
+
+Agregá estos scripts en tu HTML:
+
+```html
+<!-- CSS del widget -->
+<link rel="stylesheet" href="https://demo-chatbot-inmobiliaria.vercel.app/inmobot-widget.css">
+
+<!-- JavaScript del widget -->
+<script src="https://demo-chatbot-inmobiliaria.vercel.app/inmobot-widget.iife.js"></script>
+
+<!-- Inicialización -->
+<script>
+  InmoBot.init({
+    apiUrl: 'TU_URL_DE_N8N_WEBHOOK',
+    primaryColor: '#2563eb',
+    botName: 'InmoBot',
+    welcomeMessage: '¡Hola! ¿En qué puedo ayudarte?',
+    position: 'bottom-right'
+  });
+</script>
+```
+
+### Para desarrollo local
 
 ```bash
 cd widget-react
@@ -31,58 +57,77 @@ npm install
 npm run dev
 ```
 
-Abre: http://localhost:3000/demo.html
+Abrí http://localhost:3000/demo.html
 
-### Build para Producción
+### Para compilar
 
 ```bash
-cd widget-react
 npm run build
-npm run preview
 ```
 
-## 📦 Deploy
+Los archivos compilados estarán en `widget-react/dist/`
 
-### Widget → Vercel
-```bash
-cd widget-react
-npm run build
-# Subir carpeta dist/ a Vercel
+## ⚙️ Configuración
+
+### Opciones de inicialización
+
+```javascript
+InmoBot.init({
+  apiUrl: string,           // URL del webhook de N8N (requerido)
+  primaryColor: string,     // Color principal del widget (default: '#2563eb')
+  botName: string,          // Nombre del bot (default: 'InmoBot')
+  welcomeMessage: string,   // Mensaje de bienvenida
+  placeholderText: string,  // Texto del input
+  position: string,         // 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+  buttonSize: string,       // Tamaño del botón (default: '60px')
+  chatWidth: string,        // Ancho del chat (default: '380px')
+  chatHeight: string        // Alto del chat (default: '600px')
+});
 ```
 
-### N8N → Render
-- Ya deployado en: https://n8n-bot-inmobiliario.onrender.com
-- Keep-alive automático con GitHub Actions
+## 📊 Estructura del proyecto
 
-## 🔧 Keep Alive
+```
+.
+├── widget-react/          # Widget React
+│   ├── src/              # Código fuente
+│   │   ├── ChatWidget.jsx
+│   │   ├── ChatWidget.css
+│   │   └── index.js
+│   ├── dist/             # Build de producción
+│   ├── public/           # Assets públicos
+│   └── demo.html         # Demo local
+├── Documentacion/        # Documentación técnica
+└── vercel.json          # Configuración de Vercel
+```
 
-Este repo incluye un workflow de GitHub Actions que mantiene N8N activo:
-- **Archivo:** `.github/workflows/keep-alive.yml`
-- **Frecuencia:** Cada 10 minutos
-- **Ver:** [.github/workflows/README.md](.github/workflows/README.md)
+## 🔧 Integración con N8N
 
-## ✅ Estado Actual
+El widget se conecta a un workflow de N8N que:
+1. Recibe la consulta del usuario
+2. Procesa con Claude AI (Haiku + Sonnet)
+3. Busca propiedades en la base de datos
+4. Genera respuesta personalizada
+5. Guarda estadísticas en PostgreSQL
+6. Envía notificaciones por Telegram
 
-- ✅ Widget React funcionando
-- ✅ Conectado con N8N en Render
-- ✅ Build de producción listo
-- ✅ Keep-alive configurado
-- ⏳ Pendiente: Deploy a Vercel
+## 📈 Estadísticas
 
-## 📚 Documentación Completa
+El sistema trackea:
+- Consultas realizadas
+- Tiempo de respuesta
+- Tokens consumidos (costos)
+- Conversiones (leads capturados)
+- Propiedades mostradas
 
-- [Widget React - Instrucciones](widget-react/INSTRUCCIONES.md)
-- [Keep Alive - GitHub Actions](.github/workflows/README.md)
-- [Guías Técnicas](Documentacion/)
+## 📝 Licencia
 
-## 🛠️ Stack Tecnológico
+Desarrollado por InmoBot para uso en proyectos inmobiliarios.
 
-- **Frontend:** React 18 + Vite
-- **Backend:** N8N (Workflow Automation)
-- **IA:** Claude AI (Anthropic)
-- **Deploy:** Render + Vercel
-- **Keep-Alive:** GitHub Actions
+## 🤝 Soporte
+
+Para consultas o personalizaciones, contactá al equipo de desarrollo.
 
 ---
 
-**Última actualización:** 1 de Diciembre 2024
+**Powered by Claude AI** 🤖

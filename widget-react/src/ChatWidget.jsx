@@ -9,12 +9,19 @@ const ChatWidget = ({ config }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactFormData, setContactFormData] = useState({
+    nombre: '',
+    telefono: '',
+    disponibilidad: ''
+  });
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
   // Configuración con defaults
   const {
     apiUrl = 'https://n8n-bot-inmobiliario.onrender.com/webhook/chat',
+    contactUrl = 'https://n8n-bot-inmobiliario.onrender.com/webhook/contact',
     primaryColor = '#2563eb',
     botName = 'AsistenteBot',
     welcomeMessage = '¡Hola! Soy tu asistente inmobiliario virtual. ¿En qué te puedo ayudar hoy?',
@@ -34,10 +41,15 @@ const ChatWidget = ({ config }) => {
     scrollToBottom();
   }, [messages]);
 
-  // Focus en input cuando se abre
+  // Focus en input cuando se abre, y blur cuando se cierra
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
+    } else if (!isOpen) {
+      // Cuando se cierra, remover focus de cualquier elemento
+      if (document.activeElement && document.activeElement !== document.body) {
+        document.activeElement.blur();
+      }
     }
   }, [isOpen]);
 
@@ -56,10 +68,19 @@ const ChatWidget = ({ config }) => {
   }, [isOpen, messages.length, welcomeMessage]);
 
   // Toggle widget
-  const toggleWidget = () => {
+  const toggleWidget = (e) => {
     setIsOpen(!isOpen);
     if (!isOpen) {
       setUnreadCount(0);
+    } else {
+      // Cuando se cierra el chat, remover el focus del botón
+      if (e && e.currentTarget) {
+        e.currentTarget.blur();
+      }
+      // También remover focus de cualquier elemento activo
+      if (document.activeElement) {
+        document.activeElement.blur();
+      }
     }
   };
 
@@ -149,6 +170,107 @@ const ChatWidget = ({ config }) => {
         timestamp: new Date().toISOString()
       }
     ]);
+    setShowContactForm(false);
+  };
+
+  // Manejar click en "Agendar visita"
+  const handleAgendarVisita = () => {
+    setShowContactForm(true);
+    scrollToBottom();
+  };
+
+  // Manejar click en "Ver otras opciones"
+  const handleVerOtrasOpciones = () => {
+    setShowContactForm(false);
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  // Manejar cambios en formulario de contacto
+  const handleContactFormChange = (field, value) => {
+    setContactFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Enviar formulario de contacto
+  const handleSubmitContactForm = async (e) => {
+    e.preventDefault();
+
+    if (!contactFormData.nombre || !contactFormData.telefono) {
+      alert('Por favor completá tu nombre y teléfono');
+      return;
+    }
+
+    // Agregar mensaje del usuario con los datos
+    const contactMessage = {
+      id: `contact-${Date.now()}`,
+      text: `📋 Solicitud de contacto:\n\nNombre: ${contactFormData.nombre}\nTeléfono: ${contactFormData.telefono}${contactFormData.disponibilidad ? `\nDisponibilidad: ${contactFormData.disponibilidad}` : ''}`,
+      sender: 'user',
+      timestamp: new Date().toISOString()
+    };
+
+    setMessages(prev => [...prev, contactMessage]);
+    setIsTyping(true);
+
+    // Enviar datos a N8N
+    try {
+      const response = await fetch(contactUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nombre: contactFormData.nombre,
+          telefono: contactFormData.telefono,
+          disponibilidad: contactFormData.disponibilidad || 'No especificada',
+          timestamp: new Date().toISOString(),
+          sessionId: sessionId
+        })
+      });
+
+      setIsTyping(false);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Agregar respuesta del bot
+      const confirmationMessage = {
+        id: `confirmation-${Date.now()}`,
+        text: data.message || '¡Perfecto! Recibimos tus datos. Uno de nuestros asesores se va a contactar con vos a la brevedad para coordinar la visita. ¡Gracias por tu interés!',
+        sender: 'bot',
+        timestamp: new Date().toISOString()
+      };
+
+      setMessages(prev => [...prev, confirmationMessage]);
+
+    } catch (error) {
+      console.error('Error al enviar formulario:', error);
+      setIsTyping(false);
+
+      const errorMessage = {
+        id: `error-${Date.now()}`,
+        text: 'Hubo un problema al enviar tu solicitud. Por favor, intentá de nuevo en unos momentos.',
+        sender: 'bot',
+        timestamp: new Date().toISOString(),
+        isError: true
+      };
+
+      setMessages(prev => [...prev, errorMessage]);
+    }
+
+    // Limpiar formulario y ocultarlo
+    setContactFormData({
+      nombre: '',
+      telefono: '',
+      disponibilidad: ''
+    });
+    setShowContactForm(false);
   };
 
   // Formatear timestamp
@@ -157,23 +279,143 @@ const ChatWidget = ({ config }) => {
     return date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Renderizar mensaje con markdown básico
+  // Renderizar mensaje con markdown básico e imágenes integradas
   const renderMessage = (message) => {
     let text = message.text;
 
-    // Convertir **texto** a <strong>
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Remover texto "Ver fotos:" y variantes
+    text = text.replace(/📷\s*Ver fotos?:\s*/gi, '');
+    text = text.replace(/🖼️\s*Ver fotos?:\s*/gi, '');
+    text = text.replace(/Ver fotos?:\s*/gi, '');
 
-    // Convertir URLs a links
-    text = text.replace(
-      /(https?:\/\/[^\s]+)/g,
-      '<a href="$1" target="_blank" rel="noopener noreferrer">Ver foto</a>'
+    // Detectar si el mensaje contiene las opciones de acción (multiidioma)
+    const hasActionButtonsES = text.includes('✅ Dejar tus datos de contacto') && text.includes('🔍 Ver otras opciones');
+    const hasActionButtonsEN = text.includes('✅ Leave your contact information') && text.includes('🔍 See other options');
+    const hasActionButtonsPT = text.includes('✅ Deixar seus dados de contato') && text.includes('🔍 Ver outras opções');
+
+    const hasActionButtons = hasActionButtonsES || hasActionButtonsEN || hasActionButtonsPT;
+
+    // Si tiene botones de acción, separar el texto principal de las opciones
+    let mainText = text;
+    let showButtons = false;
+    let buttonLanguage = 'es'; // Default español
+
+    if (hasActionButtons) {
+      // Detectar idioma y extraer el texto antes de las opciones
+      let optionsMatch = null;
+
+      if (hasActionButtonsES) {
+        optionsMatch = text.match(/(.*?)(?=¿Alguna de estas propiedades te interesa\?)/s);
+        buttonLanguage = 'es';
+      } else if (hasActionButtonsEN) {
+        optionsMatch = text.match(/(.*?)(?=Are any of these properties interesting to you\?)/s);
+        buttonLanguage = 'en';
+      } else if (hasActionButtonsPT) {
+        optionsMatch = text.match(/(.*?)(?=Alguma dessas propriedades te interessa\?)/s);
+        buttonLanguage = 'pt';
+      }
+
+      if (optionsMatch) {
+        mainText = optionsMatch[1].trim();
+        showButtons = true;
+      }
+    }
+
+    // Dividir el texto en secciones por saltos de línea dobles (propiedades separadas)
+    const sections = mainText.split(/\n\n+/);
+
+    return (
+      <div>
+        {sections.map((section, sectionIdx) => {
+          // Buscar imágenes en esta sección
+          const imageRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp))/gi;
+          const images = [];
+          let match;
+          let cleanSection = section;
+
+          while ((match = imageRegex.exec(section)) !== null) {
+            images.push(match[1]);
+          }
+
+          // Remover URLs de imágenes del texto
+          cleanSection = cleanSection.replace(imageRegex, '');
+
+          // Convertir **texto** a <strong>
+          cleanSection = cleanSection.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+          // Convertir URLs restantes a links
+          cleanSection = cleanSection.replace(
+            /(https?:\/\/[^\s]+)/g,
+            '<a href="$1" target="_blank" rel="noopener noreferrer">Ver enlace</a>'
+          );
+
+          // Convertir saltos de línea simples
+          cleanSection = cleanSection.replace(/\n/g, '<br/>');
+
+          return (
+            <div key={sectionIdx} className="message-section">
+              <div dangerouslySetInnerHTML={{ __html: cleanSection }} />
+              {images.length > 0 && (
+                <div className="message-images">
+                  {images.map((url, imgIdx) => (
+                    <img
+                      key={imgIdx}
+                      src={url}
+                      alt={`Foto ${imgIdx + 1}`}
+                      className="message-image-thumbnail"
+                      onClick={() => window.open(url, '_blank')}
+                      title="Click para ampliar"
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Botones de acción si están presentes */}
+        {showButtons && (() => {
+          // Textos según el idioma detectado
+          const buttonTexts = {
+            es: {
+              prompt: '¿Alguna de estas propiedades te interesa? Podés:',
+              schedule: '✅ Dejar tus datos de contacto',
+              other: '🔍 Ver otras opciones'
+            },
+            en: {
+              prompt: 'Are any of these properties interesting to you? You can:',
+              schedule: '✅ Leave your contact information',
+              other: '🔍 See other options'
+            },
+            pt: {
+              prompt: 'Alguma dessas propriedades te interessa? Você pode:',
+              schedule: '✅ Deixar seus dados de contato',
+              other: '🔍 Ver outras opções'
+            }
+          };
+
+          const texts = buttonTexts[buttonLanguage] || buttonTexts.es;
+
+          return (
+            <div className="action-buttons">
+              <p className="action-prompt">{texts.prompt}</p>
+              <button
+                className="action-button primary"
+                onClick={handleAgendarVisita}
+              >
+                {texts.schedule}
+              </button>
+              <button
+                className="action-button secondary"
+                onClick={handleVerOtrasOpciones}
+              >
+                {texts.other}
+              </button>
+            </div>
+          );
+        })()}
+      </div>
     );
-
-    // Convertir saltos de línea
-    text = text.replace(/\n/g, '<br/>');
-
-    return <div dangerouslySetInnerHTML={{ __html: text }} />;
   };
 
   // Estilos dinámicos basados en config
@@ -191,20 +433,14 @@ const ChatWidget = ({ config }) => {
     >
       {/* Botón flotante */}
       {!isOpen && (
-        <button 
+        <button
           className="chat-widget-button"
           onClick={toggleWidget}
+          onMouseDown={(e) => e.preventDefault()}
+          tabIndex="-1"
           aria-label="Abrir chat"
         >
-          <svg 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2"
-            className="chat-icon"
-          >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
+          <img src="/inmobot-logo.jpg" alt="InmoBot" className="chat-icon-logo" />
           {unreadCount > 0 && (
             <span className="unread-badge">{unreadCount}</span>
           )}
@@ -218,9 +454,7 @@ const ChatWidget = ({ config }) => {
           <div className="chat-header">
             <div className="chat-header-info">
               <div className="bot-avatar">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-                </svg>
+                <img src="/inmobot-logo.jpg" alt="InmoBot" />
               </div>
               <div className="bot-info">
                 <h3 className="bot-name">{botName}</h3>
@@ -299,29 +533,82 @@ const ChatWidget = ({ config }) => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
-          <div className="chat-input-container">
-            <textarea
-              ref={inputRef}
-              className="chat-input"
-              placeholder={placeholderText}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              rows="1"
-              disabled={isTyping}
-            />
-            <button 
-              className="send-button"
-              onClick={sendMessage}
-              disabled={!inputValue.trim() || isTyping}
-              aria-label="Enviar mensaje"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-              </svg>
-            </button>
-          </div>
+          {/* Input o Formulario de Contacto */}
+          {showContactForm ? (
+            <div className="contact-form-container">
+              <div className="contact-form-header">
+                <h4>📋 Dejanos tus datos</h4>
+                <button
+                  className="close-form-button"
+                  onClick={() => setShowContactForm(false)}
+                  aria-label="Cerrar formulario"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="contact-form-subtitle">Te contactamos a la brevedad</p>
+              <form onSubmit={handleSubmitContactForm} className="contact-form">
+                <div className="form-group">
+                  <label htmlFor="nombre">Nombre completo *</label>
+                  <input
+                    type="text"
+                    id="nombre"
+                    value={contactFormData.nombre}
+                    onChange={(e) => handleContactFormChange('nombre', e.target.value)}
+                    placeholder="Juan Pérez"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="telefono">Teléfono *</label>
+                  <input
+                    type="tel"
+                    id="telefono"
+                    value={contactFormData.telefono}
+                    onChange={(e) => handleContactFormChange('telefono', e.target.value)}
+                    placeholder="+54 9 11 1234-5678"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="disponibilidad">Disponibilidad horaria (opcional)</label>
+                  <input
+                    type="text"
+                    id="disponibilidad"
+                    value={contactFormData.disponibilidad}
+                    onChange={(e) => handleContactFormChange('disponibilidad', e.target.value)}
+                    placeholder="Ej: Lunes a viernes 14-18hs"
+                  />
+                </div>
+                <button type="submit" className="submit-form-button">
+                  Enviar solicitud
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div className="chat-input-container">
+              <textarea
+                ref={inputRef}
+                className="chat-input"
+                placeholder={placeholderText}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                rows="1"
+                disabled={isTyping}
+              />
+              <button
+                className="send-button"
+                onClick={sendMessage}
+                disabled={!inputValue.trim() || isTyping}
+                aria-label="Enviar mensaje"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+              </button>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="chat-footer">
