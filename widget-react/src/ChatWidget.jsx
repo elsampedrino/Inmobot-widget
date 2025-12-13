@@ -440,7 +440,7 @@ const ChatWidget = ({ config }) => {
           tabIndex="-1"
           aria-label="Abrir chat"
         >
-          <img src="/inmobot-logo.jpg" alt="InmoBot" className="chat-icon-logo" />
+          <img src="https://inmobot-widget.vercel.app/inmobot-logo.jpg" alt="InmoBot" className="chat-icon-logo" />
           {unreadCount > 0 && (
             <span className="unread-badge">{unreadCount}</span>
           )}
@@ -454,7 +454,7 @@ const ChatWidget = ({ config }) => {
           <div className="chat-header">
             <div className="chat-header-info">
               <div className="bot-avatar">
-                <img src="/inmobot-logo.jpg" alt="InmoBot" />
+                <img src="https://inmobot-widget.vercel.app/inmobot-logo.jpg" alt="InmoBot" />
               </div>
               <div className="bot-info">
                 <h3 className="bot-name">{botName}</h3>
