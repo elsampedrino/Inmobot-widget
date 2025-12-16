@@ -44,8 +44,10 @@ B) SIN COINCIDENCIAS
    - RESPONDE: NO_MATCH
 
 C) CONSULTA DEMASIADO GENÉRICA
-   - Pregunta muy amplia que coincide con muchas propiedades (10+)
-   - Ejemplos: "qué tenés", "opciones disponibles", "mostrame todo"
+   - Pregunta muy amplia SIN criterios específicos de filtrado
+   - NO menciona: ubicación específica, tipo de propiedad, operación (alquilar/comprar), ni características
+   - Ejemplos: "qué tenés", "opciones disponibles", "mostrame todo", "qué propiedades tenés"
+   - Aunque haya pocas propiedades, si la consulta es genérica → TOO_GENERIC
    - RESPONDE: TOO_GENERIC
 
 D) CONSULTA ESPECÍFICA CON COINCIDENCIAS
@@ -158,6 +160,9 @@ ${propiedadesFiltradas.length > 0 ? `PROPIEDADES SELECCIONADAS:\n${JSON.stringif
      * Características en texto natural (NO bullets)
      * Precio formato argentino (USD 950/mes + $85.000 expensas)
      * Si tiene fotos: "📸 Ver fotos: [URL]"
+     * IMPORTANTE: Compará la ubicación de cada propiedad con lo que pidió el usuario en la consulta original
+       Si la ubicación es diferente pero cercana, mencionalo antes de mostrar esa propiedad
+       Ejemplo: Si pidió "Palermo" pero mostrás Belgrano → "También encontré esta opción en Belgrano, un barrio vecino a Palermo"
    - Al final, menciona si hay más opciones disponibles
    - CIERRE EXACTO (sin modificar):
      * ES: "¿Alguna de estas propiedades te interesa? Podés:\n✅ Dejar tus datos de contacto\n🔍 Ver otras opciones"

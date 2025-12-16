@@ -29,7 +29,8 @@ const ChatWidget = ({ config }) => {
     position = 'bottom-right',
     buttonSize = '60px',
     chatWidth = '380px',
-    chatHeight = '600px'
+    chatHeight = '600px',
+    repo = '0' // 0 = demo, 1 = Cristian BBR
   } = config || {};
 
   // Scroll automático al último mensaje
@@ -108,7 +109,8 @@ const ChatWidget = ({ config }) => {
         body: JSON.stringify({
           message: inputValue,
           sessionId: sessionId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          repo: repo // Parámetro para seleccionar repositorio (0=demo, 1=BBR)
         })
       });
 

@@ -1,0 +1,29 @@
+{
+  "propiedades": [
+    {
+      "id": "BBR-CASA-001",
+      "tipo": "Casa",
+      "operacion": "Venta",
+      "titulo": "Casa de prueba BBR en Ramallo",
+      "direccion": {
+        "calle": "Calle Test 123",
+        "localidad": "Ramallo",
+        "provincia": "Buenos Aires",
+        "pais": "Argentina"
+      },
+      "precio": {
+        "valor": 100000,
+        "moneda": "USD"
+      },
+      "caracteristicas": {
+        "superficie_total": 120
+      },
+      "descripcion": "Propiedad de prueba para testing del parámetro repo",
+      "disponibilidad": "Disponible",
+      "fotos": {
+        "cantidad": 0,
+        "paths": []
+      }
+    }
+  ]
+}
