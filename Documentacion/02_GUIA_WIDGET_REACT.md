@@ -675,11 +675,12 @@ Access to fetch at 'https://...' from origin '...' has been blocked by CORS
 
 ### **Problema 5: "Failed to fetch"**
 
-**Causa:** N8N dormido (Render Free)
+**Causa:** Servicio N8N no disponible
 
 **Solución:**
-- Esperar 30-60 segundos (se despierta)
-- O implementar keep-alive (ver guía 01)
+- Verificar que N8N esté activo en Render Dashboard
+- Con plan Starter (activo), verificar logs para identificar errores
+- Verificar la URL del webhook en la configuración
 
 ---
 

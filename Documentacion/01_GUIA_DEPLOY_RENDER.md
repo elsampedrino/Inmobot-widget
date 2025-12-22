@@ -26,19 +26,20 @@
 ### **Costos:**
 
 ```
-Plan Free de Render:
-✅ 750 horas/mes gratis
-✅ 512MB RAM
-✅ Suficiente para MVP
-✅ Se duerme después de 15 min sin uso (se despierta automático)
-
 Plan Starter ($7/mes):
-- 24/7 sin dormir
-- 1GB RAM
-- Mejor performance
+✅ 24/7 sin dormir
+✅ 1GB RAM
+✅ Mejor performance
+✅ No requiere keep-alive
+
+Plan Free (disponible):
+- 750 horas/mes gratis
+- 512MB RAM
+- Se duerme después de 15 min sin uso
+- Requiere keep-alive
 ```
 
-**Recomendación:** Empezar con Free, upgradear si Cristian paga.
+**Estado actual:** Usando plan Starter (activo).
 
 ---
 
@@ -277,30 +278,9 @@ Tu workflow ya debería tener un nodo Webhook al inicio, pero verificá:
 1. Click en **"Active"** (switch arriba)
 2. El workflow debe estar en verde ✅
 
-### **Importante - Keep-Alive:**
+### **Nota sobre Keep-Alive:**
 
-Como el plan Free se duerme, necesitás un "ping" cada 10 minutos:
-
-**Crear workflow de keep-alive:**
-
-1. Nuevo workflow: **"Keep Alive"**
-
-2. **Nodo 1: Schedule Trigger**
-   ```
-   Mode: Every X
-   Value: 10
-   Unit: Minutes
-   ```
-
-3. **Nodo 2: HTTP Request**
-   ```
-   Method: GET
-   URL: https://n8n-bot-inmobiliario.onrender.com/webhook/ping
-   ```
-
-4. **Activar este workflow**
-
-Esto mantiene N8N despierto las 24hs.
+Con el plan Starter, **no se requiere keep-alive** ya que el servicio está activo 24/7 sin suspensión por inactividad.
 
 ---
 
@@ -359,11 +339,12 @@ curl -X POST https://n8n-bot-inmobiliario.onrender.com/webhook/chat \
 
 ### **Problema 1: "Service Unavailable" o 503**
 
-**Causa:** N8N se durmió (plan Free)
+**Causa:** Servicio temporalmente no disponible
 
 **Solución:**
-- Esperar 30-60 segundos (se despierta solo)
-- O implementar el workflow de keep-alive (ver sección 6)
+- Verificar estado del servicio en Render Dashboard
+- Si el servicio está "Sleeping" (plan Free), esperar 30-60 segundos
+- Con plan Starter, verificar logs para identificar el error
 
 ---
 
@@ -483,7 +464,7 @@ Antes de continuar con el widget React, verificá:
 - [ ] Webhook responde correctamente
 - [ ] Test con curl exitoso
 - [ ] URL del webhook anotada
-- [ ] Keep-alive workflow activo (opcional)
+- [ ] Plan Starter activo (recomendado para producción)
 
 ---
 
@@ -531,20 +512,18 @@ Días disponibles:   31 días (750/24 = 31.25)
 Perfecto para: MVP y testing
 ```
 
-### **Plan Starter ($7/mes):**
+### **Plan Starter ($7/mes) - ACTIVO:**
 
 ```
+Estado: ✅ ACTIVO desde Diciembre 2024
+
 Ventajas:
 ✅ Sin sleep (24/7 despierto)
 ✅ Más RAM (1GB vs 512MB)
 ✅ Sin límite de horas
 ✅ Mejor performance
 ✅ Custom domains
-
-Cuando upgradear:
-- Cristian paga el servicio
-- Necesitas 24/7 sin delays
-- Tienes >1000 consultas/mes
+✅ No requiere keep-alive
 ```
 
 ---
@@ -605,32 +584,29 @@ Una vez que N8N está en Render:
 
 ## 📝 NOTAS IMPORTANTES
 
-### **Performance:**
+### **Performance con Plan Starter:**
 
 ```
-Primera request después del sleep: ~10-15 segundos
-Requests subsecuentes: ~5-10 segundos
-Con keep-alive activo: ~5-10 segundos siempre
+✅ Tiempo de respuesta: ~2-5 segundos (siempre)
+✅ Sin delays por sleep
+✅ Servicio 24/7 disponible
+✅ Mayor RAM disponible para procesamiento
 ```
 
-### **Limitaciones del Free Plan:**
+### **Comparación de Planes:**
 
 ```
-✅ Suficiente para MVP
-✅ ~1000 consultas/mes sin problema
-❌ Se duerme después de 15 min
+Plan Free:
+✅ Suficiente para MVP y testing
+❌ Se duerme después de 15 min sin uso
 ❌ Solo 512MB RAM
-❌ Build puede ser lento
-```
+❌ Primera request después del sleep: ~10-15 segundos
 
-### **Cuándo migrar a Starter:**
-
-```
-Cuando:
-- Cristian lo usa activamente
-- >50 consultas/día
-- Necesitas 24/7 sin delays
-- Tienes presupuesto ($7/mes es barato)
+Plan Starter (ACTIVO):
+✅ 24/7 sin sleep
+✅ 1GB RAM
+✅ Respuesta consistente 2-5 segundos
+✅ Mejor para producción
 ```
 
 ---

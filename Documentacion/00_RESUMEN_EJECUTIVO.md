@@ -197,7 +197,7 @@ Tu workflow: ~200MB ✅
 - [ ] Widget buildeado
 - [ ] Widget deployado en GitHub Pages
 - [ ] HTML demo con widget integrado
-- [ ] Keep-alive workflow activo
+- [ ] Plan Starter activo en Render (✅ completado)
 - [ ] Email a Cristian con instrucciones
 
 ---
