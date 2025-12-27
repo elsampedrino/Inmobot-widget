@@ -1003,8 +1003,12 @@
       },
       "descripcion": "Excelente lote de 10 x 35 mts, ubicado sobre calle 20 de Junio al 700, barrio Don Antonio, Villa Ramallo. Hermosos y tranquilo barrio. Se encuentra ubicado a 5 min del centro de VIlla Ramallo.",
       "fotos": {
-        "carpeta": "29",
-        "urls": []
+        "carpeta": "31",
+        "urls": [
+          "https://res.cloudinary.com/dikb9wzup/image/upload/v1766829977/bbr/prop-031/foto01.jpg",
+          "https://res.cloudinary.com/dikb9wzup/image/upload/v1766829978/bbr/prop-031/foto02.jpg",
+          "https://res.cloudinary.com/dikb9wzup/image/upload/v1766829979/bbr/prop-031/foto03.jpg"
+        ]
       },
       "caracteristicas": {
         "superficie_total": "350 m²"
@@ -1027,8 +1031,11 @@
       },
       "descripcion": "Excelente lote de 17,90 x 26,00 mts.Posee una casa con posibilidad seguir construyendo y ampliando. Cuenta con los servicios de agua y luz.",
       "fotos": {
-        "carpeta": "30",
-        "urls": []
+        "carpeta": "34",
+        "urls": [
+          "https://res.cloudinary.com/dikb9wzup/image/upload/v1766829980/bbr/prop-034/foto01.jpg",
+          "https://res.cloudinary.com/dikb9wzup/image/upload/v1766829981/bbr/prop-034/foto02.jpg"
+        ]
       },
       "caracteristicas": {
         "superficie_total": "465 m²"
@@ -1079,8 +1086,12 @@
       },
       "descripcion": "Se caracteriza de plano a suavemente ondulado con potencial rendimiento por las características edáficas y climáticas del lugar. Apto para actividades agrícolas, pecuarias, apícolas, avícolas y cunícolas.",
       "fotos": {
-        "carpeta": "32",
-        "urls": []
+        "carpeta": "36",
+        "urls": [
+          "https://res.cloudinary.com/dikb9wzup/image/upload/v1766829981/bbr/prop-036/foto01.jpg",
+          "https://res.cloudinary.com/dikb9wzup/image/upload/v1766829982/bbr/prop-036/foto02.jpg",
+          "https://res.cloudinary.com/dikb9wzup/image/upload/v1766829983/bbr/prop-036/foto03.jpg"
+        ]
       },
       "caracteristicas": {
         "superficie_total": "7,2 Ha"
@@ -1103,8 +1114,12 @@
       },
       "descripcion": "Se caracteriza de plano a suavemente ondulado con potencial rendimiento por las características edáficas y climáticas del lugar. Apto para actividades agrícolas, pecuarias, apícolas, avícolas y cunícolas.",
       "fotos": {
-        "carpeta": "33",
-        "urls": []
+        "carpeta": "37",
+        "urls": [
+          "https://res.cloudinary.com/dikb9wzup/image/upload/v1766829984/bbr/prop-037/foto01.jpg",
+          "https://res.cloudinary.com/dikb9wzup/image/upload/v1766829985/bbr/prop-037/foto02.jpg",
+          "https://res.cloudinary.com/dikb9wzup/image/upload/v1766829985/bbr/prop-037/foto03.jpg"
+        ]
       },
       "caracteristicas": {
         "superficie_total": "9,76 Ha"
@@ -1143,7 +1158,7 @@
     "total": 34,
     "fecha_generacion": "2025-12-27T06:50:09.085626",
     "archivo_origen": "..\\BBR Grupo Inmobiliario\\BBR_Propiedades_Estandar_20251227.xlsx",
-    "fecha_actualizacion_fotos": "2025-12-27T07:00:03.007842",
+    "fecha_actualizacion_fotos": "2025-12-27T07:06:26.856717",
     "carpeta_cloudinary": "bbr"
   }
 }
