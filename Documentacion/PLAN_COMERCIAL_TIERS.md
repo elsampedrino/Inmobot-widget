@@ -38,28 +38,26 @@ Ofrecer **soluciones escalables** que crecen con el cliente, desde inmobiliarias
 - Sin filtrado previo, Haiku hace filtro + respuesta
 
 **Datos:**
-- JSON estático en GitHub (gratuito)
-- Actualizaciones manuales (1-2 veces/semana)
+- JSON estático en GitHub
+- Actualizaciones manuales (mensual)
 - Sin base de datos
 
 **Hosting:**
-- N8N: Render free tier o self-hosted
+- N8N: Render Starter
 - Widget: Vercel free tier
 - Imágenes: Cloudinary free tier (25GB/mes)
 
 ### ✅ Funcionalidades incluidas:
 
 **Bot conversacional:**
-- ✅ Respuestas en tiempo real (<1 seg)
+- ✅ Respuestas en tiempo real
 - ✅ Filtrado por ubicación, tipo, precio
-- ✅ Multiidioma (ES/EN/PT)
-- ✅ Formulario de contacto
-- ✅ Galerías de fotos
+- ✅ 1 Foto por Propiedad
 
 **Gestión:**
 - ✅ Actualización de propiedades vía JSON
 - ✅ Widget personalizable (colores, textos)
-- ✅ Integración simple (2 líneas de código)
+- ✅ Integración simple a la Web de la Inmobiliaria
 
 ### ❌ Limitaciones:
 
@@ -73,10 +71,9 @@ Ofrecer **soluciones escalables** que crecen con el cliente, desde inmobiliarias
 
 | Concepto | Precio (USD) | Precio (ARS)* |
 |----------|--------------|---------------|
-| Setup inicial | $150 | $150,000 |
-| Mensual | $30 | $30,000 |
+| Setup inicial | $50 | $50,000 |
+| Mensual | $150 | $150,000 |
 
-*Tipo de cambio referencial: 1 USD = 1,000 ARS (ajustar según mercado)
 
 **Incluye:**
 - Configuración inicial del bot
@@ -87,7 +84,7 @@ Ofrecer **soluciones escalables** que crecen con el cliente, desde inmobiliarias
 
 ---
 
-## 🥈 TIER 2: PROFESIONAL (Haiku + Sonnet) ← ACTUAL
+## 🥈 TIER 2: PROFESIONAL (Haiku + Sonnet)
 
 ### 🎯 Target:
 - Inmobiliarias medianas (4-10 agentes)
@@ -105,11 +102,11 @@ Ofrecer **soluciones escalables** que crecen con el cliente, desde inmobiliarias
 
 **Datos:**
 - JSON estático en GitHub
-- Actualizaciones: 2-3 veces/semana
+- Actualizaciones manuales (quincenal)
 - Versionado automático (Git)
 
 **Hosting:**
-- N8N: Render Starter ($7/mes) o self-hosted VPS
+- N8N: Render Starter
 - Widget: Vercel Pro ($20/mes) - dominio custom
 - Imágenes: Cloudinary Pro ($89/mes) - 100GB
 
@@ -123,6 +120,7 @@ Ofrecer **soluciones escalables** que crecen con el cliente, desde inmobiliarias
 - ✅ Manejo inteligente de "sin coincidencias"
 - ✅ Sugerencias proactivas de alternativas
 - ✅ Tono personalizado por marca
+- ✅ Captura de leads por Telegram
 
 **Gestión avanzada:**
 - ✅ Múltiples repositorios (1 bot, N inmobiliarias)
@@ -145,8 +143,8 @@ Ofrecer **soluciones escalables** que crecen con el cliente, desde inmobiliarias
 
 | Concepto | Precio (USD) | Precio (ARS)* |
 |----------|--------------|---------------|
-| Setup inicial | $300 | $300,000 |
-| Mensual | $80 | $80,000 |
+| Setup inicial | $50 | $50,000 |
+| Mensual | $200 | $200,000 |
 
 **Incluye:**
 - Todo del Tier 1
@@ -179,7 +177,7 @@ Ofrecer **soluciones escalables** que crecen con el cliente, desde inmobiliarias
 - API REST para integración con CRM
 
 **Hosting:**
-- N8N: Render Pro ($25/mes) o VPS dedicado
+- N8N: Render Starter
 - Widget: Vercel Enterprise
 - Imágenes: Cloudinary Advanced ($224/mes) - 500GB
 - DB: Supabase Pro ($25/mes) o Railway ($20/mes)

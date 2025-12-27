@@ -18,7 +18,20 @@
       "Bash(git push)",
       "Bash(dir \"c:\\\\Desarrollo\\\\InmoBot\\\\ChatBOT-Inmobiliaria-VCode\")",
       "Bash(findstr:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(python Scripts-Templates/crear_excel_template.py:*)",
+      "Bash(python Scripts-Templates/excel_to_json.py:*)",
+      "Bash(python Scripts-Templates/subir_fotos_cloudinary.py:*)",
+      "Bash(ls:*)",
+      "Bash(python analizar_excel_bbr.py:*)",
+      "Bash(python convertir_bbr_a_estandar.py:*)",
+      "Bash(rm:*)",
+      "Bash(grep:*)",
+      "Bash(set CLOUDINARY_CLOUD_NAME=dikb9wzup:*)",
+      "Bash(set CLOUDINARY_API_KEY=298397144263636)",
+      "Bash(set CLOUDINARY_API_SECRET=8JnHARLfkJCvvUyDAce73YBGYvw)",
+      "Bash(git reset:*)"
     ],
     "deny": [],
     "ask": []
