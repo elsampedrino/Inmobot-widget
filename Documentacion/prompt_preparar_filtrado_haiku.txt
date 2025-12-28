@@ -1,0 +1,160 @@
+// ============================================
+// PREPARAR FILTRADO HAIKU - VERSIÓN CORREGIDA
+// ============================================
+
+// 1. OBTENER INPUT
+const inputData = $input.first().json;
+
+// VALIDAR QUE LLEGARON PROPIEDADES
+if (!inputData.data || typeof inputData.data !== 'string' || inputData.data.length < 10) {
+  return [{
+    json: {
+      error: true,
+      errorType: 'GITHUB_ERROR',
+      errorCode: 'ERR_NO_PROPERTIES',
+      response: 'Lo siento, estamos teniendo problemas técnicos para acceder a nuestras propiedades. ¿Podrías intentar nuevamente en unos minutos?',
+      timestamp: new Date().toISOString()
+    }
+  }];
+}
+
+// 2. OBTENER CONSULTA DEL USUARIO
+const webhookData = $('Webhook Chat').first().json;
+const body = webhookData.body || webhookData;
+
+const consulta =
+  body.message ||
+  body.consulta ||
+  body.query ||
+  webhookData.message ||
+  'Busco una propiedad';
+
+// 3. PARSEAR PROPIEDADES
+const parsedData = JSON.parse(inputData.data);
+let propiedades = [];
+
+if (Array.isArray(parsedData.propiedades)) {
+  propiedades = parsedData.propiedades;
+} else if (parsedData.propiedades) {
+  propiedades = parsedData.propiedades;
+}
+
+// 4. CREAR FORMATO COMPACTO PARA HAIKU (CORREGIDO)
+const propiedadesCompactas = propiedades.map((p, index) => {
+
+  const id = p.id || `PROP-${String(index + 1).padStart(3, '0')}`;
+  const tipo = p.tipo || 'Propiedad';
+  const operacion = p.operacion || 'Venta';
+
+  // PRECIO NORMALIZADO
+  const precioValor =
+    typeof p.precio?.valor === 'number'
+      ? p.precio.valor
+      : (typeof p.precio === 'number' ? p.precio : null);
+
+  const precioTxt = precioValor ? `$${precioValor}` : 'Consultar';
+
+  const barrio = p.direccion?.barrio || p.barrio || 'Buenos Aires';
+
+  // DORMITORIOS / AMBIENTES
+  const dormitorios =
+    p.caracteristicas?.dormitorios ??
+    p.dormitorios ??
+    null;
+
+  const ambientes =
+    typeof dormitorios === 'number'
+      ? dormitorios + 1
+      : '-';
+
+  const superficie =
+    p.caracteristicas?.superficie_total ??
+    p.superficie ??
+    '-';
+
+  // DETALLES (ARRAY)
+  const detallesArr = Array.isArray(p.detalles) ? p.detalles : [];
+
+  const extrasPermitidos = [
+   'ascensor',
+   'cochera',
+   'baulera',
+   'balcon',   
+   'patio',
+   'pileta',
+   'quincho',
+   'parrilla'
+  ];
+
+  const extras = extrasPermitidos.filter(e => detallesArr.includes(e));
+ 
+  return `${id}|${tipo}|${operacion}|${precioTxt}|${barrio}|${ambientes}amb|${dormitorios ?? '-'}dorm|${superficie}m2${extras.length ? '|' + extras.join(',') : ''}`;
+
+}).join('\n');
+
+// 5. CONSTRUIR PAYLOAD PARA HAIKU
+const haikuPayload = {
+  model: 'claude-3-5-haiku-20241022',
+  max_tokens: 500,
+  messages: [
+    {
+      role: 'user',
+      content: `CONSULTA: "${consulta}"
+
+PROPIEDADES DISPONIBLES:
+${propiedadesCompactas}
+
+=== TU TAREA COMO FILTRO INTELIGENTE ===
+
+PASO 1: ANALIZAR EL TIPO DE CONSULTA
+
+Clasifica la consulta en UNO de estos tipos:
+
+A) SALUDO SIMPLE
+   - Solo saludos sin intención de búsqueda
+   - Ejemplos: "hola", "buenos días", "hi", "hello", "oi"
+   - RESPONDE: GREETING
+
+B) SIN COINCIDENCIAS
+   - Busca ubicación/características que NO existen en el catálogo
+   - Solo usar si NO hay alternativas razonables
+   - RESPONDE: NO_MATCH
+
+C) CONSULTA DEMASIADO GENÉRICA
+   - Muy amplia, sin criterios claros
+   - Ej: "qué tenés", "opciones disponibles"
+   - RESPONDE: TOO_GENERIC
+
+D) CONSULTA ESPECÍFICA CON COINCIDENCIAS
+   - Tiene criterios claros
+   - Hay entre 1 y 10 coincidencias razonables
+   - RESPONDE: IDs de las 3 a 5 mejores propiedades
+
+PASO 2: RESPONDER SEGÚN EL TIPO
+
+- Si es A, B o C → responde SOLO con la palabra clave
+- Si es D → responde SOLO con IDs separados por coma
+
+EJEMPLOS:
+- "hola" → GREETING
+- "algo en Ramallo" → NO_MATCH
+- "qué propiedades tenés" → TOO_GENERIC
+- "casa 2 dorm en Palermo" → PROP-001,PROP-004,PROP-007
+
+IMPORTANTE:
+- NO expliques nada
+- NO agregues texto adicional
+- SOLO la palabra clave o los IDs`
+    }
+  ]
+};
+
+// 6. RETORNAR
+return [{
+  json: {
+    haikuPayload,
+    propiedadesCompletas: propiedades,
+    consulta,
+    sessionId: body.sessionId || 'session-default'
+  }
+}];

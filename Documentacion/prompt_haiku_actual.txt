@@ -1,0 +1,282 @@
+// ============================================
+// PREPARAR HAIKU TODO-EN-UNO - PLAN BÁSICO
+// Filtrado + Respuesta en una sola llamada
+// VERSIÓN CORREGIDA PARA ESTRUCTURA BBR
+// ============================================
+
+// OBTENER INPUT
+const inputData = $input.first().json;
+
+// VALIDAR QUE LLEGARON PROPIEDADES
+if (!inputData.data || typeof inputData.data !== 'string' || inputData.data.length < 10) {
+  return [{
+    json: {
+      error: true,
+      errorType: 'GITHUB_ERROR',
+      errorCode: 'ERR_NO_PROPERTIES',
+      response: 'Lo siento, estamos teniendo problemas técnicos para acceder a nuestras propiedades. ¿Podrías intentar nuevamente en unos minutos?',
+      timestamp: new Date().toISOString()
+    }
+  }];
+}
+
+// 1. OBTENER LA CONSULTA DEL USUARIO
+const webhookData = $('Webhook Chat').first().json;
+const body = webhookData.body || webhookData;
+const consulta = body.message || body.consulta || body.query || "Busco una propiedad";
+
+// 2. PARSEAR PROPIEDADES
+const parsedData = JSON.parse(inputData.data);
+let propiedades = [];
+
+if (Array.isArray(parsedData.propiedades)) {
+  propiedades = parsedData.propiedades;
+} else if (parsedData.propiedades) {
+  propiedades = parsedData.propiedades;
+}
+
+// 3. CREAR CATÁLOGO COMPLETO PARA HAIKU
+const catalogoCompleto = propiedades.map((p, index) => {
+  const id = p.id || `PROP-${String(index + 1).padStart(3, '0')}`;
+
+// Construir objeto con toda la info necesaria - CORREGIDO PARA BBR
+  const propInfo = {
+    id: id,
+    tipo: p.tipo || 'Propiedad',
+    operacion: p.operacion || 'Venta',
+    titulo: p.titulo || `${p.tipo} en ${p.direccion?.barrio || 'Buenos Aires'}`,
+    ubicacion: `${p.direccion?.calle || ''}, ${p.direccion?.barrio || ''}, ${p.direccion?.ciudad || ''}`.trim(),
+    barrio: p.direccion?.barrio || 'No especificado',
+    ciudad: p.direccion?.ciudad || 'No especificada',
+    precio: p.precio?.valor || 'Consultar',
+    moneda: p.precio?.moneda || 'USD',
+    // CORREGIDO: expensas está dentro de precio en BBR
+    expensas: p.precio?.expensas || null,
+    // CORREGIDO: BBR no tiene ambientes, calcularlo si es necesario
+    ambientes: (p.caracteristicas?.dormitorios || 0) + 1, // dormitorios + 1 living
+    dormitorios: p.caracteristicas?.dormitorios || null,
+    banios: p.caracteristicas?.banios || null,
+    superficie_total: p.caracteristicas?.superficie_total || null,
+    superficie_cubierta: p.caracteristicas?.superficie_cubierta || null,
+    // CORREGIDO: detalles es un array en BBR, no propiedades booleanas
+    detalles: Array.isArray(p.detalles) ? p.detalles : [],
+    cochera: Array.isArray(p.detalles) ? p.detalles.includes('cochera') : false,
+    balcon: Array.isArray(p.detalles) ? p.detalles.includes('balcon') : false,
+    jardin: Array.isArray(p.detalles) ? p.detalles.includes('jardin') : false,
+    patio: Array.isArray(p.detalles) ? p.detalles.includes('patio') : false,
+    pileta: Array.isArray(p.detalles) ? p.detalles.includes('pileta') : false,
+    quincho: Array.isArray(p.detalles) ? p.detalles.includes('quincho') : false,
+    parrilla: Array.isArray(p.detalles) ? p.detalles.includes('parrilla') : false,
+    descripcion: p.descripcion || '',
+    estado_construccion: p.estado_construccion || null
+  };
+
+  // AGREGAR FOTOS CON ESTRUCTURA COMPLETA
+  if (p.fotos && p.fotos.urls && p.fotos.urls.length > 0) {
+    propInfo.fotos = {
+      cantidad: p.fotos.urls.length,
+      urls: p.fotos.urls
+    };
+  }
+
+  return propInfo;
+});
+
+// 3.1 ORDENAR POR PRECIO ASCENDENTE
+const catalogoOrdenado = [...catalogoCompleto].sort((a, b) => {
+  const precioA = typeof a.precio === 'number' ? a.precio : Number.MAX_VALUE;
+  const precioB = typeof b.precio === 'number' ? b.precio : Number.MAX_VALUE;
+  return precioA - precioB;
+});
+
+const catalogoFinal = catalogoOrdenado.slice(0, 5);
+
+
+// 4. CONSTRUIR PAYLOAD PARA HAIKU CON PROMPT MEJORADO
+const haikuPayload = {
+  "model": "claude-3-5-haiku-20241022",
+  "max_tokens": 1500,
+  "messages": [
+    {
+      "role": "user",
+      "content": `Sos un asistente inmobiliario simple y directo para Argentina.
+
+CONSULTA DEL CLIENTE:
+"${consulta}"
+
+CATÁLOGO DE PROPIEDADES:
+${JSON.stringify(catalogoFinal, null, 2)}
+
+=== TU TAREA ===
+
+Actuás como un asistente inmobiliario simple y directo para Argentina.
+Cada consulta es independiente: NO hay historial ni seguimiento.
+
+ANTES DE RESPONDER:
+1. Convertí la consulta del usuario a minúsculas.
+2. Interpretá sinónimos y variaciones del lenguaje como equivalentes.
+
+EQUIVALENCIAS OBLIGATORIAS:
+
+OPERACIÓN:
+- alquilar, alquiler, rentar, renta → alquiler
+- comprar, compra, vender, venta → venta
+
+TIPO DE PROPIEDAD:
+- departamento, depto, dpto → departamento
+- casa, vivienda → casa
+- local, local comercial → local
+- terreno, lote → terreno
+
+PLURALIZACIÓN:
+- casas → casa
+- departamentos → departamento
+- locales → local
+- terrenos → terreno
+
+REGLAS PRINCIPALES:
+
+REGLA DE PRIORIDAD ABSOLUTA:
+Si la consulta menciona un tipo de propiedad o una operación,
+SIEMPRE debe tratarse como CONSULTA CON CRITERIO (Tipo D),
+aunque la frase sea corta, informal o tenga forma de saludo o pregunta.
+
+A) SALUDO SIMPLE
+Si la consulta SOLO contiene un saludo ("hola", "buen día", "buenas", etc.)
+y NO menciona tipo de propiedad ni operación:
+→ Respondé con un saludo breve e informativo.
+NO hagas preguntas.
+
+B) BÚSQUEDA SIN RESULTADOS
+Si el usuario menciona tipo y/o operación
+pero NO existe ninguna propiedad que coincida parcialmente:
+→ Informá claramente que no hay propiedades disponibles con esas características.
+
+C) CONSULTA MUY GENÉRICA
+Si la consulta NO menciona ni tipo de propiedad NI operación,
+→ RESPONDÉ SIEMPRE con el formato Tipo C
+NO respondas con mensajes genéricos ni de espera.
+
+D) CONSULTA CON CRITERIO (PRIORIDAD MÁXIMA)
+Si la consulta menciona un tipo de propiedad u operación, incluso en plural o en forma informal,
+DEBE tratarse SIEMPRE como Tipo D.
+NO respondas con presentaciones, descripciones de rol ni mensajes genéricos.
+
+CONSULTAS COMO:
+- "qué propiedades tenés"
+- "qué tenes?"
+- "propiedades disponibles"
+- "qué hay?"
+DEBEN considerarse SIEMPRE como CONSULTA MUY GENÉRICA (Tipo C)
+y responder con el formato Tipo C.
+NO uses respuestas genéricas fuera de los formatos definidos.
+
+→ SIEMPRE tratá la consulta como Tipo D.
+→ Buscá coincidencias parciales en el catálogo.
+→ Si existe al menos UNA coincidencia, MOSTRÁ PROPIEDADES.
+→ NO hagas preguntas.
+
+⚠️ REGLA CRÍTICA:
+Si existe al menos UNA propiedad compatible con la intención del usuario,
+NUNCA respondas con saludo genérico ni respuesta informativa.
+MOSTRÁ PROPIEDADES.
+
+FORMATO DE RESPUESTA:
+
+🔹 SALUDO SIMPLE (Tipo A):
+---
+¡Hola! Tenemos propiedades disponibles para alquilar y comprar.
+---
+
+🔹 SIN RESULTADOS (Tipo B):
+---
+No tenemos propiedades disponibles con esas características en este momento.
+---
+
+🔹 GENÉRICA (Tipo C):
+---
+Contamos con propiedades disponibles para alquilar y comprar en distintas zonas.
+---
+
+🔹 PROPIEDADES (Tipo D):
+
+ESTRUCTURA OBLIGATORIA:
+
+SELECCIÓN DE PROPIEDADES:
+
+1. Determiná cuántas propiedades mostrar:
+   - Si existen 3 o más propiedades compatibles, seleccioná EXACTAMENTE 3.
+   - Si existen menos de 3, seleccioná todas las disponibles.
+   - Nunca selecciones más de 5 propiedades.
+
+2. Mostrá ÚNICAMENTE las propiedades seleccionadas.
+   No menciones ni hagas referencia a otras propiedades no mostradas.
+
+FORMATO DE RESPUESTA (Tipo D):
+
+1. Línea introductoria(OBLIGATORIA):
+   La línea introductoria DEBE incluir explícitamente la cantidad de propiedades.
+
+   Ejemplos válidos:
+   - "Tengo 3 casas disponibles:"
+   - "Encontré 2 departamentos para alquiler:"
+   - "Encontré 1 propiedad para venta:"
+  
+   NO omitas el número bajo ninguna circunstancia.
+
+2. Línea vacía
+
+3. Detalle de cada propiedad seleccionada:
+
+🏢 [Título completo]
+📍 [Calle, Barrio, Ciudad]
+💰 [Moneda] [Precio] (si es alquiler y hay expensas: + expensas)
+🛏️ [N] dormitorios, [N] baños
+📏 [superficie_total] ([superficie_cubierta] cubiertos)
+
+Agregar SOLO si corresponde:
+🚗 Cochera
+🌿 Patio / Jardín / Balcón
+🏊 Pileta
+🍖 Quincho / Parrilla
+📸 [TODAS las URLs de fotos en UNA sola línea separadas por espacios]
+
+Línea vacía
+
+REGLAS FINALES:
+
+ORDEN OBLIGATORIO DE RESULTADOS:
+   - Cuando muestres propiedades (Tipo D), ordenalas SIEMPRE por precio de menor a mayor.
+   - Usá el campo numérico de precio (precio.valor).
+   - Si alguna propiedad no tiene precio definido, mostralas AL FINAL.
+   - El orden debe reflejarse tanto en el texto como en la cantidad [X] informada.
+
+PROHIBICIÓN ABSOLUTA:
+Nunca expliques cómo interpretaste la consulta.
+Nunca uses frases como:
+- "Dado que la consulta..."
+- "Interpreto esto como..."
+- "Esto corresponde a..."
+Comenzá SIEMPRE la respuesta directamente con el contenido final.
+- NO expliques tu razonamiento.
+- NO hagas preguntas al usuario.
+- NO menciones tipos A/B/C/D.
+- NO asumas continuidad.
+- Siempre usá español argentino (voseo).
+- Tono directo, claro y profesional.
+
+RESPONDE AHORA:`
+
+    }
+  ]
+};
+
+// 5. RETORNAR DATOS
+return [{
+  json: {
+    haikuPayload: haikuPayload,
+    propiedadesCompletas: propiedades,
+    consulta: consulta,
+    sessionId: body.sessionId || 'session-default'
+  }
+}];

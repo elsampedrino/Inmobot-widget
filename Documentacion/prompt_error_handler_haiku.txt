@@ -1,0 +1,9 @@
+return [{
+  json: {
+    error: true,
+    errorType: 'AI_ERROR',
+    errorCode: 'ERR_AI_FILTER',
+    response: 'Disculpa, nuestro asistente está experimentando problemas técnicos. Por favor, intentá nuevamente en unos minutos o contactanos directamente para atenderte personalmente.',
+    timestamp: new Date().toISOString()
+  }
+}];
