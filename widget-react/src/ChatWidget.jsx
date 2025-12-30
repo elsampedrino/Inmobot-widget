@@ -30,7 +30,7 @@ const ChatWidget = ({ config }) => {
     buttonSize = '60px',
     chatWidth = '380px',
     chatHeight = '600px',
-    repo = '0' // 0 = demo, 1 = Cristian BBR
+    repo = 'demo' // 'demo' o 'bbr'
   } = config || {};
 
   // Scroll automático al último mensaje
@@ -110,7 +110,7 @@ const ChatWidget = ({ config }) => {
           message: inputValue,
           sessionId: sessionId,
           timestamp: new Date().toISOString(),
-          repo: repo // Parámetro para seleccionar repositorio (0=demo, 1=BBR)
+          repo: repo // 'demo' o 'bbr'
         })
       });
 
@@ -229,7 +229,8 @@ const ChatWidget = ({ config }) => {
           telefono: contactFormData.telefono,
           disponibilidad: contactFormData.disponibilidad || 'No especificada',
           timestamp: new Date().toISOString(),
-          sessionId: sessionId
+          sessionId: sessionId,
+          repo: repo
         })
       });
 
